@@ -1,0 +1,43 @@
+name: 抓台股資料
+
+on:
+  schedule:
+    # GitHub 的時間是 UTC，台北時間 = UTC + 8
+    - cron: "10 8 * * 1-5"   # 台北 週一～五 16:10（收盤後）
+    - cron: "20 23 * * 0-4"  # 台北 週一～五 07:20（日報 08:32 之前補抓一次）
+  workflow_dispatch:          # 可以在 Actions 頁面手動按「Run workflow」
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-data
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 從 FinMind 抓資料
+        env:
+          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
+        run: python scripts/fetch.py
+
+      - name: 有新資料就存回專案
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          if git diff --cached --quiet; then
+            echo "沒有新資料"
+          else
+            git commit -m "data: $(TZ=Asia/Taipei date +%F' '%H:%M)"
+            git push
+          fi
