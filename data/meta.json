@@ -1,8 +1,8 @@
 {
-  "updated_at": "2026-10-21T13:48:03+00:00",
+  "updated_at": "2026-10-22T01:33:18+00:00",
   "latest_trading_date": "2026-10-21",
   "tickers": 123,
   "tickers_with_prices": 123,
-  "price_files_updated": 122,
+  "price_files_updated": 0,
   "failures": []
 }
